@@ -4,7 +4,7 @@ const index = (req, res) => {
     const sql = `SELECT * FROM posts`
     connection.query(sql, (err, results) => {
         if (err) {
-            return res.serverStatus(500).json({ error: `Database query failed` });
+            return res.status(500).json({ error: `Database query failed` });
         }
         res.json(results)
     })
@@ -14,14 +14,14 @@ const show = (req, res) => {
     const id = parseInt(req.params.id);
     const sql = `
     SELECT * 
-    fROM posts
+    FROM posts
     WHERE posts.id = ?
     `
     connection.query(sql, [id], (err, results) => {
         if (err) {
-            return res.serverStatus(500).json({ error: `Database query failed` });
+            return res.status(500).json({ error: `Database query failed` });
         }
-        res.json(results)
+        res.json(results);
     })
 }
 
@@ -41,7 +41,17 @@ const modify = (req, res) => {
 
 const destroy = (req, res) => {
     let id = parseInt(req.params.id);
-    res.send(`Elemento ${id} eliminato`);
+    const sql = `
+    DELETE 
+    FROM posts
+    WHERE posts.id = ?
+    `
+    connection.query(sql, [id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: `Database query failed` });
+        }
+        res.sendStatus(204);
+    })
 }
 
 module.exports = { index, show, store, update, modify, destroy };
