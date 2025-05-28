@@ -7,6 +7,8 @@ const blogRouter = require(`./routers/blogRouter`);
 const notFound = require(`./middlewares/notFound.js`);
 const errorsHandler = require("./middlewares/errorsHandler.js");
 
+app.use(express.json());
+
 app.use('/blog', blogRouter);
 
 app.get(`/`, (req, res) => {
