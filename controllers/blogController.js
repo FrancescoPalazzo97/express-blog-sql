@@ -12,7 +12,17 @@ const index = (req, res) => {
 
 const show = (req, res) => {
     const id = parseInt(req.params.id);
-    res.send(`Elemento ${id}`);
+    const sql = `
+    SELECT * 
+    fROM posts
+    WHERE posts.id = ?
+    `
+    connection.query(sql, [id], (err, results) => {
+        if (err) {
+            return res.serverStatus(500).json({ error: `Database query failed` });
+        }
+        res.json(results)
+    })
 }
 
 const store = (req, res) => {
