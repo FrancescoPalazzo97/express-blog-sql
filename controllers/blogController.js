@@ -1,10 +1,13 @@
 const connection = require(`../data/db`)
 
 const index = (req, res) => {
-    const sql = `SELECT * FROM posts`
+    const sql = `
+    SELECT * 
+    FROM posts
+    `
     connection.query(sql, (err, results) => {
         if (err) {
-            return res.status(500).json({ error: `Database query failed` });
+            return res.status(500).json({ error: `Database query failed: ${err}` });
         }
         res.json(results)
     })
@@ -17,11 +20,29 @@ const show = (req, res) => {
     FROM posts
     WHERE posts.id = ?
     `
+    const tagsSql = `
+    SELECT tags.*
+    FROM tags
+    JOIN post_tag
+    ON tags.id = post_tag.tag_id
+    WHERE post_tag.post_id = ?
+    `
     connection.query(sql, [id], (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: `Database query failed` });
-        }
-        res.json(results);
+        if (err) return res.status(500).json({ error: `Database query failed: ${err}` });
+
+        if (results === 0) return res.status(404).json({ error: `post not found` });
+
+        const post = results[0];
+
+        connection.query(tagsSql, [id], (err, tagResults) => {
+            if (err) return res.status(500).json({ error: `Database query failed: ${err}` });
+
+            if (results === 0) return res.status(404).json({ error: `tag not found` });
+
+            post.tags = tagResults;
+
+            res.json(post);
+        })
     })
 }
 
@@ -30,17 +51,17 @@ const store = (req, res) => {
 }
 
 const update = (req, res) => {
-    let id = parseInt(req.params.id);
+    const id = parseInt(req.params.id);
     res.send(`Elemento ${id} aggiornato`);
 }
 
 const modify = (req, res) => {
-    let id = parseInt(req.params.id);
+    const id = parseInt(req.params.id);
     res.send(`Elemento ${id} parzialmente aggiornato`);
 }
 
 const destroy = (req, res) => {
-    let id = parseInt(req.params.id);
+    const id = parseInt(req.params.id);
     const sql = `
     DELETE 
     FROM posts
@@ -48,7 +69,7 @@ const destroy = (req, res) => {
     `
     connection.query(sql, [id], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: `Database query failed` });
+            return res.status(500).json({ error: `Database query failed: ${err}` });
         }
         res.sendStatus(204);
     })
